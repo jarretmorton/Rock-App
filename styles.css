@@ -59,6 +59,8 @@ body {
 }
 .logo-mark { color: var(--iron); }
 .app-header .link-btn { color: var(--quartz); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.02em; }
+.header-left { display: flex; align-items: baseline; gap: 6px; }
+.version-tag { color: var(--stone); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; }
 .header-actions { display: flex; gap: 2px; }
 .icon-btn {
   background: transparent; border: none; color: var(--quartz);

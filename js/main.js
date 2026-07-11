@@ -33,6 +33,9 @@ import * as ui from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 
+// App version — single source of truth, shown in the header. Bump on release.
+export const APP_VERSION = '0.2.0';
+
 // --- Session state (in memory only; never persisted) -------------------------
 let session = null;
 function freshSession() {
@@ -96,6 +99,7 @@ function boot() {
 
 // --- Header ------------------------------------------------------------------
 function wireHeader() {
+  $('app-version').textContent = `v${APP_VERSION}`;
   $('home-btn').addEventListener('click', () => {
     show(MOCK_MODE || hasApiKey() ? 'screen-capture' : 'screen-setup');
   });
