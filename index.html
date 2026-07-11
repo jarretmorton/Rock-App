@@ -21,6 +21,11 @@
     </div>
   </header>
 
+  <div id="model-banner" class="banner" role="status" hidden>
+    <span id="model-banner-text"></span>
+    <button id="model-banner-dismiss" class="banner-x" type="button" aria-label="Dismiss">×</button>
+  </div>
+
   <main id="app">
 
     <!-- 1. KEY SETUP / SETTINGS -->
@@ -52,6 +57,13 @@
           <button id="key-change-btn" class="secondary-btn" type="button">Change</button>
           <button id="key-remove-btn" class="danger-btn" type="button">Remove</button>
         </div>
+      </div>
+
+      <div id="model-settings">
+        <p class="field-label">Model</p>
+        <p id="model-current" class="model-current"></p>
+        <button id="model-reset-btn" class="secondary-btn" type="button" hidden>Use the stronger model (default)</button>
+        <button id="model-lite-btn" class="secondary-btn" type="button" hidden>Switch to the lighter model</button>
       </div>
 
       <details class="fine-print">

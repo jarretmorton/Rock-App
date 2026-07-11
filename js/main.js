@@ -9,6 +9,8 @@ import {
   getCandidates,
   getVerdict,
   validateKey,
+  activeModel,
+  onModelDowngrade,
 } from './api.js';
 import {
   getApiKey,
@@ -17,9 +19,11 @@ import {
   hasApiKey,
   maskApiKey,
   getModelOverride,
+  setModelOverride,
 } from './storage.js';
 import {
   MODEL_ID,
+  MODEL_ID_FALLBACK,
   PROMPT_VERSION,
 } from './prompts.js';
 import {
@@ -86,6 +90,10 @@ function boot() {
   wireDiagnostics();
   wireVerdict();
   wireLibrary();
+  wireModelBanner();
+
+  // When the API auto-downgrades after a rate limit, tell the user.
+  onModelDowngrade((model) => showModelBanner(model));
 
   session = freshSession();
 
@@ -125,6 +133,18 @@ function renderSetup() {
       ui.statusLine('Mock mode is on (?mock=1) — no key needed. Real requests are disabled.', 'info')
     );
   }
+
+  renderModelRow();
+}
+
+// Show which model is active and offer the relevant switch.
+function renderModelRow() {
+  const onLite = activeModel() === MODEL_ID_FALLBACK;
+  $('model-current').textContent = onLite
+    ? `${MODEL_ID_FALLBACK} — the lighter model (higher rate limits, slightly less detail).`
+    : `${MODEL_ID} — the default, stronger model.`;
+  $('model-reset-btn').hidden = !onLite; // offer "back to default" only when on lite
+  $('model-lite-btn').hidden = onLite; // offer "switch to lite" only when on default
 }
 
 function wireSetup() {
@@ -143,6 +163,31 @@ function wireSetup() {
     renderSetup();
   });
   $('setup-continue-btn').addEventListener('click', () => show('screen-capture'));
+
+  $('model-reset-btn').addEventListener('click', () => {
+    setModelOverride(''); // clear override → back to the default stronger model
+    hideModelBanner();
+    renderModelRow();
+  });
+  $('model-lite-btn').addEventListener('click', () => {
+    setModelOverride(MODEL_ID_FALLBACK);
+    renderModelRow();
+  });
+}
+
+// --- Model downgrade banner --------------------------------------------------
+function wireModelBanner() {
+  $('model-banner-dismiss').addEventListener('click', hideModelBanner);
+}
+
+function showModelBanner(model) {
+  $('model-banner-text').textContent =
+    `Hit the rate limit — switched to the lighter model (${model}) to keep going. Results may be a little less detailed. Change this in Settings.`;
+  $('model-banner').hidden = false;
+}
+
+function hideModelBanner() {
+  $('model-banner').hidden = true;
 }
 
 async function onSaveKey() {

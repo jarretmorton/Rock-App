@@ -7,6 +7,7 @@
 
 import {
   MODEL_ID,
+  MODEL_ID_FALLBACK,
   CANDIDATES_PROMPT,
   VERDICT_PROMPT,
   CANDIDATES_SCHEMA,
@@ -14,7 +15,7 @@ import {
   VALIDATION_PROMPT,
   buildVerdictContext,
 } from './prompts.js';
-import { getApiKey, getModelOverride } from './storage.js';
+import { getApiKey, getModelOverride, setModelOverride } from './storage.js';
 
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
@@ -97,25 +98,26 @@ export function parseModelJson(text) {
 }
 
 // --- Core fetch --------------------------------------------------------------
-function activeModel() {
+export function activeModel() {
   return getModelOverride() || MODEL_ID;
 }
 
-// parts: array of generateContent parts. schema: responseSchema object.
-async function generateContent(parts, schema) {
-  const key = getApiKey();
-  if (!key) throw new ApiError('key', 'No API key saved. Add one in Settings.');
+// Notifier so the UI can tell the user when we auto-downgrade the model.
+// Registered from main.js via onModelDowngrade().
+let downgradeNotifier = null;
+export function onModelDowngrade(cb) {
+  downgradeNotifier = cb;
+}
+function notifyDowngrade(model) {
+  try {
+    downgradeNotifier?.(model);
+  } catch {
+    /* a broken notifier must never break the request */
+  }
+}
 
-  const model = activeModel();
-  const body = {
-    contents: [{ role: 'user', parts }],
-    generationConfig: {
-      responseMimeType: 'application/json',
-      responseSchema: schema,
-      temperature: 0.2,
-    },
-  };
-
+// One attempt against a specific model. Throws ApiError on any failure.
+async function requestOnce(model, key, body) {
   let resp;
   try {
     resp = await fetch(`${API_BASE}/${model}:generateContent`, {
@@ -142,12 +144,44 @@ async function generateContent(parts, schema) {
   return parseModelJson(text);
 }
 
+// parts: array of generateContent parts. schema: responseSchema object.
+// Starts on the stronger model; on a rate limit, auto-downgrades to the
+// flash-lite fallback (persisting the choice), tells the UI, and retries once.
+async function generateContent(parts, schema) {
+  const key = getApiKey();
+  if (!key) throw new ApiError('key', 'No API key saved. Add one in Settings.');
+
+  const body = {
+    contents: [{ role: 'user', parts }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: schema,
+      temperature: 0.2,
+    },
+  };
+
+  const model = activeModel();
+  try {
+    return await requestOnce(model, key, body);
+  } catch (e) {
+    const canDowngrade = e instanceof ApiError && e.kind === 'rate' && model !== MODEL_ID_FALLBACK;
+    if (!canDowngrade) throw e;
+    // Switch to the lighter model for this and all future calls, then retry.
+    setModelOverride(MODEL_ID_FALLBACK);
+    notifyDowngrade(MODEL_ID_FALLBACK);
+    return await requestOnce(MODEL_ID_FALLBACK, key, body);
+  }
+}
+
 function mapHttpError(status, detailText) {
   if (status === 400 || status === 403) {
     return new ApiError('key', 'Key rejected — check it in Settings. (Region restrictions can also cause this: the free tier is not available in the EEA, UK, or Switzerland.)', detailText);
   }
   if (status === 429) {
-    return new ApiError('rate', "You've hit the free tier's rate limit. Daily quotas reset at midnight Pacific. Wait a bit, or switch the model to the flash-lite fallback in Settings.", detailText);
+    // The generateContent wrapper auto-downgrades to the lite model on the first
+    // 429; this message is what the user sees only if even the lite model is
+    // rate-limited (or on a validation call).
+    return new ApiError('rate', "You've hit the free tier's rate limit on the lighter model too. Daily quotas reset at midnight Pacific — please wait and try again.", detailText);
   }
   if (status >= 500) {
     return new ApiError('server', 'Google had a server error. Try again in a moment.', detailText);

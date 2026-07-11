@@ -50,8 +50,14 @@ Everything model-facing lives in [`js/prompts.js`](js/prompts.js) — the prompt
 the JSON response schemas, `PROMPT_VERSION`, and the model constants:
 
 - `MODEL_ID` — the vision model (default `gemini-3.5-flash`).
-- `MODEL_ID_FALLBACK` — a lighter Flash-Lite model to switch to if you hit rate
-  limits (`gemini-3.1-flash-lite`).
+- `MODEL_ID_FALLBACK` — a lighter Flash-Lite model (`gemini-3.1-flash-lite`).
+
+The app **starts on `MODEL_ID`** and, the first time a request hits a rate limit
+(HTTP 429), **automatically downgrades to `MODEL_ID_FALLBACK`**, shows a banner
+explaining the switch, and retries the request so the flow continues. The choice
+persists (in `localStorage`) so later requests skip straight to the lighter
+model. You can switch back to the stronger model, or opt into the lighter one
+manually, under **Settings → Model**.
 
 **Model names go stale.** If a request 404s on the model, update `MODEL_ID` here —
 it's the single source of truth. Verify current IDs at
