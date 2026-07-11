@@ -28,6 +28,11 @@
 
 * { box-sizing: border-box; }
 
+/* The `hidden` attribute must always win, even over author display rules
+   (e.g. .banner{display:flex} or .secondary-btn{display:block}). Without this,
+   toggling el.hidden has no visible effect on those elements. */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
