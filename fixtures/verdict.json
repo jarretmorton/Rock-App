@@ -1,0 +1,13 @@
+{
+  "final": {
+    "name": "Basalt",
+    "confidence": 0.72,
+    "reasoning": "You reported no crystals visible to the naked eye, which rules out the coarse-grained Gabbro, and a clear magnetic response, which fits basalt's typical magnetite content. Combined with the dark, fine groundmass and small gas cavities in the photo, basalt is the best fit."
+  },
+  "runner_up": {
+    "name": "Andesite",
+    "why_still_possible": "Andesite is also fine-grained and can look nearly identical in a photo. If the magnetic pull was actually weak and you can spot pale feldspar specks under a lens, andesite moves back into contention."
+  },
+  "confirm_with": "Scrape the rock hard across an unglazed porcelain tile: basalt and andesite leave little to no streak, so a strong colored streak would tell you it is something else entirely.",
+  "caveats": "This is a photo plus a few field tests, not a lab analysis. Distinguishing basalt from andesite reliably needs a thin section or chemistry; treat this as 'likely basalt' rather than certain."
+}

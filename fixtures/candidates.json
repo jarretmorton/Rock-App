@@ -1,0 +1,50 @@
+{
+  "is_identifiable_rock": true,
+  "image_quality_feedback": "Good light, but a coin or finger for scale would help judge grain size.",
+  "candidates": [
+    {
+      "name": "Basalt",
+      "type": "igneous",
+      "confidence": 0.55,
+      "visual_evidence": "Dark grey-black, very fine-grained groundmass with no crystals visible to the naked eye, and a couple of small rounded gas cavities near the top edge.",
+      "commonly_confused_with": ["Gabbro", "Andesite", "Diabase"]
+    },
+    {
+      "name": "Gabbro",
+      "type": "igneous",
+      "confidence": 0.28,
+      "visual_evidence": "Dark and clearly heavy-looking, but the surface may show faint interlocking mineral grains, which would point coarser than basalt.",
+      "commonly_confused_with": ["Basalt", "Diorite"]
+    },
+    {
+      "name": "Andesite",
+      "type": "igneous",
+      "confidence": 0.17,
+      "visual_evidence": "Medium-to-dark grey tone with a slightly rougher matte texture; possible if there are pale specks of feldspar scattered in the groundmass.",
+      "commonly_confused_with": ["Basalt", "Dacite"]
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "text": "With a hand lens or close look, can you see individual mineral crystals, or is the rock too fine to make any out?",
+      "how_to": "Hold the rock in good light and look closely (a phone macro or hand lens helps) at a clean, unweathered surface.",
+      "answers": ["Individual crystals visible", "Too fine to see crystals", "Can't test"],
+      "discriminates": "Visible interlocking crystals point to Gabbro (coarse-grained); a crystal-free groundmass points to Basalt or Andesite (fine-grained)."
+    },
+    {
+      "id": "q2",
+      "text": "Does a drop of vinegar fizz on the rock?",
+      "how_to": "Put one drop of household vinegar on a clean spot and watch for tiny bubbles for a few seconds.",
+      "answers": ["Yes, it fizzes", "No fizz", "Can't test"],
+      "discriminates": "None of these three candidates should fizz; fizzing would rule them all out and suggest a carbonate like limestone instead."
+    },
+    {
+      "id": "q3",
+      "text": "Does a magnet stick to it, or does a compass needle deflect when held near it?",
+      "how_to": "Hold a fridge magnet against several spots, or pass a compass slowly over the surface and watch the needle.",
+      "answers": ["Strong pull / needle moves", "Weak or no pull", "Can't test"],
+      "discriminates": "A noticeable magnetic response favors Basalt, which is often rich in magnetite, over Andesite."
+    }
+  ]
+}

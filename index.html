@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#3a3f44" />
+  <title>RockID — honest rock identification</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <button id="home-btn" class="link-btn" type="button" aria-label="RockID home">
+      <span class="logo-mark" aria-hidden="true">◆</span> RockID
+    </button>
+    <button id="settings-btn" class="icon-btn" type="button" aria-label="Settings">⚙︎</button>
+  </header>
+
+  <main id="app">
+
+    <!-- 1. KEY SETUP / SETTINGS -->
+    <section id="screen-setup" class="screen" hidden>
+      <h1>Set up RockID</h1>
+      <p class="lede">
+        This app runs entirely in your browser. You bring your own free Gemini API key;
+        it's stored only on this device and sent straight to Google — never to us.
+      </p>
+
+      <ol class="steps">
+        <li>Open <a href="https://aistudio.google.com/" target="_blank" rel="noopener">aistudio.google.com</a> and sign in with Google.</li>
+        <li>Click <strong>Get API key → Create API key</strong>.</li>
+        <li>Copy the key (starts with <code>AIza…</code>) and paste it below.</li>
+      </ol>
+
+      <div id="key-entry">
+        <label for="key-input" class="field-label">Gemini API key</label>
+        <input id="key-input" class="text-input" type="password" autocomplete="off"
+               spellcheck="false" placeholder="AIza…" />
+        <button id="key-save-btn" class="primary-btn" type="button">Validate &amp; save</button>
+        <div id="key-status" aria-live="polite"></div>
+      </div>
+
+      <div id="key-saved" hidden>
+        <p class="field-label">Saved key</p>
+        <p id="key-mask" class="key-mask"></p>
+        <div class="row">
+          <button id="key-change-btn" class="secondary-btn" type="button">Change</button>
+          <button id="key-remove-btn" class="danger-btn" type="button">Remove</button>
+        </div>
+      </div>
+
+      <details class="fine-print">
+        <summary>The honest fine print</summary>
+        <ul>
+          <li>Your photos go directly from your browser to Google's API.</li>
+          <li>On the free tier, Google may use your inputs to improve its products.</li>
+          <li>The free tier isn't available in the EEA, UK, or Switzerland.</li>
+          <li>We never store your photos, and your key never leaves this device except in the request header to Google.</li>
+        </ul>
+      </details>
+
+      <button id="setup-continue-btn" class="primary-btn" type="button" hidden>Start identifying →</button>
+    </section>
+
+    <!-- 2. CAPTURE -->
+    <section id="screen-capture" class="screen" hidden>
+      <h1>Photograph the rock</h1>
+
+      <label id="dropzone" for="photo-input" class="dropzone">
+        <input id="photo-input" type="file" accept="image/*" capture="environment" hidden />
+        <span class="dropzone-inner">
+          <span class="dropzone-icon" aria-hidden="true">⛰</span>
+          <span>Tap to take a photo, or drop an image here</span>
+        </span>
+      </label>
+
+      <figure id="preview-wrap" hidden>
+        <img id="preview-img" alt="Preview of the rock you photographed" />
+      </figure>
+
+      <label for="context-input" class="field-label">Add context (optional)</label>
+      <textarea id="context-input" class="text-input" rows="2"
+        placeholder="e.g., found on an Oregon beach, feels heavy for its size"></textarea>
+
+      <details class="tips">
+        <summary>Tips for a good photo</summary>
+        <ul>
+          <li>Use natural light; avoid harsh shadows.</li>
+          <li>Fill the frame with the rock.</li>
+          <li>Include a coin for scale.</li>
+          <li>A wet surface often shows color and grain better than dry.</li>
+        </ul>
+      </details>
+
+      <button id="identify-btn" class="primary-btn" type="button" disabled>Identify this rock</button>
+      <div id="capture-status" aria-live="polite"></div>
+    </section>
+
+    <!-- LOADING -->
+    <section id="screen-loading" class="screen screen-center" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <p id="loading-msg" aria-live="polite">Examining the rock…</p>
+    </section>
+
+    <!-- 3. CANDIDATES -->
+    <section id="screen-candidates" class="screen" hidden>
+      <h1>Top candidates</h1>
+      <p class="lede">A photo alone can't be sure. Here are the most likely options and the tests that tell them apart.</p>
+      <div id="candidates-out"></div>
+      <button id="start-diagnostics-btn" class="primary-btn" type="button">Run the tests →</button>
+      <button id="candidates-retake-btn" class="secondary-btn" type="button">Retake photo</button>
+    </section>
+
+    <!-- NOT A ROCK -->
+    <section id="screen-notrock" class="screen" hidden>
+      <h1>Hmm — that's not something I can identify</h1>
+      <p id="notrock-msg" class="lede"></p>
+      <button id="notrock-retake-btn" class="primary-btn" type="button">Try another photo</button>
+    </section>
+
+    <!-- 4. DIAGNOSTICS -->
+    <section id="screen-diagnostics" class="screen" hidden>
+      <div id="question-out"></div>
+      <button id="skip-diagnostics-btn" class="link-btn subtle" type="button">Skip remaining tests →</button>
+    </section>
+
+    <!-- 5. VERDICT -->
+    <section id="screen-verdict" class="screen" hidden>
+      <h1>Best identification</h1>
+      <div id="verdict-out"></div>
+      <div class="row">
+        <button id="download-session-btn" class="secondary-btn" type="button">Download session (JSON)</button>
+        <button id="restart-btn" class="primary-btn" type="button">Identify another</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

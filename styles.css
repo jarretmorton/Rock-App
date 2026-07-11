@@ -1,0 +1,223 @@
+/* RockID — mobile-first field-guide aesthetic.
+   Palette drawn from the subject: slate, basalt, sandstone, iron-oxide, quartz.
+   High contrast + large touch targets for one-handed outdoor use in sunlight. */
+
+:root {
+  --slate:      #2f343a;   /* near-black basalt for text/ink */
+  --slate-2:    #3a3f44;
+  --stone:      #6b7178;   /* muted grey */
+  --sand:       #e8e0d2;   /* sandstone background */
+  --sand-2:     #f4efe6;   /* lighter panel */
+  --quartz:     #fbfaf7;   /* card surface, near-white */
+  --iron:       #a5502d;   /* iron-oxide accent (rust) */
+  --iron-deep:  #7e3a1f;
+  --moss:       #5b6b4a;   /* muted green for "confident"/ok */
+  --line:       #cfc7b6;   /* hairline borders */
+
+  --igneous:    #8a4b3a;   /* rock-type badges */
+  --sedimentary:#b08a4f;
+  --metamorphic:#5f6d6b;
+  --mineral:    #6a6f97;
+
+  --radius: 12px;
+  --touch: 52px;           /* min touch target height */
+  --maxw: 640px;
+  --ink: var(--slate);
+  --bg: var(--sand);
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.5;
+  font-size: 17px;
+  /* subtle rock-grain texture without an external asset */
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(0,0,0,0.03) 0 1px, transparent 1px),
+    radial-gradient(circle at 70% 40%, rgba(0,0,0,0.025) 0 1px, transparent 1px);
+  background-size: 14px 14px, 22px 22px;
+}
+
+/* ---- Header ---- */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--slate);
+  color: var(--quartz);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding-top: max(12px, env(safe-area-inset-top));
+}
+.logo-mark { color: var(--iron); }
+.app-header .link-btn { color: var(--quartz); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.02em; }
+.icon-btn {
+  background: transparent; border: none; color: var(--quartz);
+  font-size: 1.4rem; cursor: pointer; min-width: var(--touch); min-height: var(--touch);
+}
+
+/* ---- Layout ---- */
+#app { max-width: var(--maxw); margin: 0 auto; padding: 20px 16px 64px; }
+.screen { animation: fade 0.2s ease; }
+.screen-center { text-align: center; padding-top: 18vh; }
+h1 { font-size: 1.6rem; margin: 0.2em 0 0.5em; letter-spacing: -0.01em; }
+h2 { font-size: 1.3rem; }
+.lede { color: var(--slate-2); margin-top: 0; }
+
+/* ---- Buttons ---- */
+button { font: inherit; }
+.primary-btn, .secondary-btn, .danger-btn {
+  display: block; width: 100%; min-height: var(--touch);
+  border-radius: var(--radius); border: 2px solid transparent;
+  font-weight: 700; cursor: pointer; margin-top: 16px; padding: 12px 16px;
+}
+.primary-btn { background: var(--iron); color: var(--quartz); }
+.primary-btn:hover { background: var(--iron-deep); }
+.primary-btn:disabled { background: var(--stone); cursor: not-allowed; opacity: 0.7; }
+.secondary-btn { background: var(--quartz); color: var(--slate); border-color: var(--line); }
+.secondary-btn:hover { background: var(--sand-2); }
+.danger-btn { background: transparent; color: var(--iron-deep); border-color: var(--iron-deep); }
+.link-btn { background: none; border: none; cursor: pointer; color: var(--iron-deep); font-weight: 600; padding: 8px; }
+.link-btn.subtle { color: var(--stone); font-weight: 500; display: block; margin: 20px auto 0; }
+.row { display: flex; gap: 12px; }
+.row > * { margin-top: 16px; }
+.row > .primary-btn, .row > .secondary-btn { flex: 1; }
+
+/* Visible keyboard focus everywhere. */
+:focus-visible { outline: 3px solid var(--iron); outline-offset: 2px; border-radius: 4px; }
+
+/* ---- Forms ---- */
+.field-label { font-weight: 700; font-size: 0.95rem; display: block; margin: 16px 0 6px; }
+.text-input {
+  width: 100%; padding: 12px 14px; font: inherit; color: var(--ink);
+  background: var(--quartz); border: 2px solid var(--line); border-radius: var(--radius);
+}
+.text-input:focus { border-color: var(--iron); outline: none; }
+textarea.text-input { resize: vertical; }
+code { background: var(--sand-2); padding: 1px 5px; border-radius: 4px; font-size: 0.9em; }
+
+.steps { padding-left: 1.2em; }
+.steps li { margin: 6px 0; }
+.fine-print, .tips, .q-why { margin-top: 20px; }
+.fine-print summary, .tips summary, .q-why summary { cursor: pointer; font-weight: 600; }
+.fine-print ul, .tips ul { color: var(--slate-2); font-size: 0.95rem; }
+.key-mask { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 1.15rem; letter-spacing: 0.05em; }
+
+/* ---- Status lines ---- */
+.status { padding: 10px 12px; border-radius: 8px; margin: 12px 0 0; font-weight: 600; }
+.status-ok  { background: #e4ecda; color: #33481f; }
+.status-err { background: #f3ddd2; color: var(--iron-deep); }
+.status-info{ background: var(--sand-2); color: var(--slate-2); }
+.error-box { margin-bottom: 20px; }
+
+/* ---- Dropzone / capture ---- */
+.dropzone {
+  display: block; border: 2px dashed var(--stone); border-radius: var(--radius);
+  background: var(--sand-2); padding: 32px 16px; text-align: center; cursor: pointer;
+  color: var(--slate-2); font-weight: 600; transition: border-color 0.15s, background 0.15s;
+}
+.dropzone-over { border-color: var(--iron); background: #efe6d6; }
+.dropzone-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.dropzone-icon { font-size: 2.4rem; }
+#preview-wrap { margin: 16px 0 0; }
+#preview-img { width: 100%; border-radius: var(--radius); border: 1px solid var(--line); display: block; }
+
+/* ---- Candidate cards (field-guide specimen entries) ---- */
+.quality-note { background: var(--sand-2); border-left: 4px solid var(--sedimentary); padding: 10px 12px; border-radius: 0 8px 8px 0; font-size: 0.95rem; }
+.cards { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+.card {
+  background: var(--quartz); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px; box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  border-left: 6px solid var(--iron);
+}
+.card:nth-child(2) { border-left-color: var(--sedimentary); }
+.card:nth-child(3) { border-left-color: var(--metamorphic); }
+.card-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.card-rank {
+  width: 28px; height: 28px; flex: none; border-radius: 50%;
+  background: var(--slate); color: var(--quartz); display: grid; place-items: center;
+  font-weight: 700; font-size: 0.9rem;
+}
+.card-name { margin: 0; flex: 1; font-size: 1.2rem; }
+.badge { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #fff; padding: 3px 8px; border-radius: 20px; }
+.badge-igneous { background: var(--igneous); }
+.badge-sedimentary { background: var(--sedimentary); }
+.badge-metamorphic { background: var(--metamorphic); }
+.badge-mineral { background: var(--mineral); }
+.evidence { margin: 10px 0 0; }
+.confused { margin: 8px 0 0; font-size: 0.9rem; color: var(--stone); }
+
+/* ---- Confidence: sediment-layer fill (signature element) ---- */
+.conf { margin-top: 12px; }
+.conf-bar {
+  display: block; height: 14px; border-radius: 7px; overflow: hidden;
+  background: var(--sand-2); border: 1px solid var(--line);
+}
+.conf-fill {
+  display: block; height: 100%;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--iron) 0, var(--iron) 10px,
+    var(--iron-deep) 10px, var(--iron-deep) 11px
+  );
+}
+.conf-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--slate-2); margin-top: 4px; letter-spacing: 0.02em; text-transform: capitalize; }
+
+/* ---- Diagnostics ---- */
+.q-progress { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--stone); font-weight: 700; }
+.q-text { margin: 4px 0 8px; }
+.q-howto { color: var(--slate-2); background: var(--sand-2); padding: 10px 12px; border-radius: 8px; }
+.answers { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+.answer-btn {
+  min-height: 60px; border-radius: var(--radius); border: 2px solid var(--slate);
+  background: var(--quartz); color: var(--slate); font-weight: 700; font-size: 1.05rem; cursor: pointer;
+  transition: transform 0.08s, background 0.12s;
+}
+.answer-btn:hover { background: var(--sand-2); }
+.answer-btn:active { transform: scale(0.98); }
+.answer-cant { border-style: dashed; color: var(--stone); border-color: var(--stone); }
+
+/* ---- Verdict ---- */
+.verdict-head { background: var(--slate); color: var(--quartz); padding: 20px; border-radius: var(--radius); }
+.verdict-kicker { margin: 0; font-size: 0.8rem; letter-spacing: 0.12em; color: var(--sand); font-weight: 700; }
+.verdict-name { margin: 4px 0 12px; font-size: 1.9rem; }
+.verdict-head .conf-bar { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); }
+.verdict-head .conf-label { color: var(--sand); }
+.verdict-reasoning { font-size: 1.05rem; }
+.panel { border-radius: var(--radius); padding: 14px 16px; margin-top: 14px; border: 1px solid var(--line); }
+.panel h3 { margin: 0 0 6px; font-size: 1rem; }
+.panel p { margin: 0; }
+.panel-runner { background: var(--sand-2); }
+.panel-confirm { background: #e4ecda; border-color: #c7d4b3; }
+.panel-caveat { background: #f3ede2; border-left: 4px solid var(--sedimentary); }
+
+/* ---- Raw debug ---- */
+.raw-debug { margin-top: 16px; }
+.raw-debug pre { white-space: pre-wrap; word-break: break-word; background: var(--slate); color: var(--sand); padding: 12px; border-radius: 8px; max-height: 40vh; overflow: auto; font-size: 0.8rem; }
+
+/* ---- Spinner ---- */
+.spinner {
+  width: 44px; height: 44px; margin: 0 auto 16px; border-radius: 50%;
+  border: 5px solid var(--line); border-top-color: var(--iron); animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* Slightly roomier on wider screens, but stays a single column field guide. */
+@media (min-width: 560px) {
+  body { font-size: 18px; }
+  h1 { font-size: 1.9rem; }
+}
