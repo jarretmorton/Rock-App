@@ -22,6 +22,13 @@ import {
   MODEL_ID,
   PROMPT_VERSION,
 } from './prompts.js';
+import {
+  specimenFromSession,
+  saveSpecimen,
+  listSpecimens,
+  getSpecimen,
+  deleteSpecimen,
+} from './library.js';
 import * as ui from './ui.js';
 
 const $ = (id) => document.getElementById(id);
@@ -53,6 +60,8 @@ const SCREENS = [
   'screen-notrock',
   'screen-diagnostics',
   'screen-verdict',
+  'screen-library',
+  'screen-library-detail',
 ];
 
 function show(screenId) {
@@ -73,6 +82,7 @@ function boot() {
   wireCandidates();
   wireDiagnostics();
   wireVerdict();
+  wireLibrary();
 
   session = freshSession();
 
@@ -93,6 +103,7 @@ function wireHeader() {
     renderSetup();
     show('screen-setup');
   });
+  $('library-btn').addEventListener('click', openLibrary);
 }
 
 // --- 1. Setup / Settings -----------------------------------------------------
@@ -280,6 +291,7 @@ async function finishDiagnostics() {
     });
     session.call2_response = data;
     ui.renderVerdict($('verdict-out'), data);
+    resetSaveButton();
     show('screen-verdict');
   } catch (err) {
     handleApiError(err, finishDiagnostics);
@@ -288,7 +300,8 @@ async function finishDiagnostics() {
 
 // --- 5. Verdict + export -----------------------------------------------------
 function wireVerdict() {
-  $('download-session-btn').addEventListener('click', downloadSession);
+  $('download-session-btn').addEventListener('click', () => downloadSession(session));
+  $('save-library-btn').addEventListener('click', onSaveToLibrary);
   $('restart-btn').addEventListener('click', () => {
     session = freshSession();
     resetCaptureUi();
@@ -296,26 +309,81 @@ function wireVerdict() {
   });
 }
 
-function downloadSession() {
-  // Stable, complete shape — seeds a future eval set. Note: the image itself is
-  // NEVER included, only its SHA-256 hash.
-  const out = {
-    timestamp: session.timestamp,
-    model_id: session.model_id,
-    prompt_version: session.prompt_version,
-    image_sha256: session.image_sha256,
-    context: session.context || '',
-    call1_response: session.call1_response,
-    answers: session.answers,
-    call2_response: session.call2_response,
+// Reset the Save-to-library button to its default state (called each time a
+// fresh verdict is shown).
+function resetSaveButton() {
+  const btn = $('save-library-btn');
+  btn.disabled = false;
+  btn.textContent = '＋ Save to library';
+  $('save-status').replaceChildren();
+}
+
+async function onSaveToLibrary() {
+  const btn = $('save-library-btn');
+  try {
+    const entry = specimenFromSession(session);
+    await saveSpecimen(entry);
+    btn.disabled = true;
+    btn.textContent = '✓ Saved to library';
+    $('save-status').replaceChildren(ui.statusLine('Saved to this device. Open it any time from the library (▤).', 'ok'));
+  } catch (e) {
+    $('save-status').replaceChildren(ui.statusLine('Could not save — your browser may block local storage in private mode.', 'err'));
+  }
+}
+
+// The stable session-export shape (also used to export a saved specimen).
+// Note: the image itself is NEVER included here, only its SHA-256 hash.
+function sessionExportShape(src) {
+  return {
+    timestamp: src.timestamp,
+    model_id: src.model_id,
+    prompt_version: src.prompt_version,
+    image_sha256: src.image_sha256,
+    context: src.context || '',
+    call1_response: src.call1_response,
+    answers: src.answers,
+    call2_response: src.call2_response,
   };
+}
+
+function downloadSession(src) {
+  const out = sessionExportShape(src);
   const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `rockid-session-${session.timestamp.replace(/[:.]/g, '-')}.json`;
+  a.download = `rockid-session-${(src.timestamp || 'export').replace(/[:.]/g, '-')}.json`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// --- 6. Library --------------------------------------------------------------
+function wireLibrary() {
+  $('library-back-btn').addEventListener('click', openLibrary);
+}
+
+async function openLibrary() {
+  let specimens = [];
+  try {
+    specimens = await listSpecimens();
+  } catch {
+    /* IndexedDB unavailable (e.g. private mode) — show empty state */
+  }
+  ui.renderLibrary($('library-out'), specimens, { onOpen: openSpecimen });
+  show('screen-library');
+}
+
+async function openSpecimen(id) {
+  const s = await getSpecimen(id);
+  if (!s) return openLibrary();
+  ui.renderSpecimenDetail($('library-detail-out'), s, {
+    onExport: (spec) => downloadSession(spec),
+    onDelete: async (delId) => {
+      await deleteSpecimen(delId);
+      openLibrary();
+    },
+  });
+  show('screen-library-detail');
 }
 
 // --- Shared helpers ----------------------------------------------------------

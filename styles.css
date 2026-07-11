@@ -59,6 +59,7 @@ body {
 }
 .logo-mark { color: var(--iron); }
 .app-header .link-btn { color: var(--quartz); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.02em; }
+.header-actions { display: flex; gap: 2px; }
 .icon-btn {
   background: transparent; border: none; color: var(--quartz);
   font-size: 1.4rem; cursor: pointer; min-width: var(--touch); min-height: var(--touch);
@@ -202,6 +203,35 @@ code { background: var(--sand-2); padding: 1px 5px; border-radius: 4px; font-siz
 /* ---- Raw debug ---- */
 .raw-debug { margin-top: 16px; }
 .raw-debug pre { white-space: pre-wrap; word-break: break-word; background: var(--slate); color: var(--sand); padding: 12px; border-radius: 8px; max-height: 40vh; overflow: auto; font-size: 0.8rem; }
+
+/* ---- Library ---- */
+.empty { text-align: center; color: var(--stone); padding: 32px 12px; }
+.empty-icon { font-size: 2.6rem; margin: 0 0 8px; color: var(--line); }
+.lib-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px; margin-top: 8px;
+}
+.lib-card {
+  display: flex; flex-direction: column; text-align: left; padding: 0; cursor: pointer;
+  background: var(--quartz); border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; color: inherit;
+}
+.lib-card:hover { border-color: var(--iron); }
+.lib-thumb { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--sand-2); }
+.lib-thumb-empty { display: grid; place-items: center; font-size: 2rem; color: var(--line); }
+.lib-meta { padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.lib-name { font-weight: 700; font-size: 1.05rem; }
+.lib-sub { font-size: 0.85rem; color: var(--iron-deep); font-weight: 600; text-transform: capitalize; }
+.lib-date { font-size: 0.8rem; color: var(--stone); }
+
+.detail-figure { margin: 0 0 16px; }
+.detail-figure img { width: 100%; border-radius: var(--radius); border: 1px solid var(--line); display: block; }
+.detail-foot { font-size: 0.8rem; color: var(--stone); margin-top: 16px; word-break: break-word; }
+.answer-log { list-style: none; padding: 0; margin: 0; }
+.answer-log li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.answer-log li:last-child { border-bottom: none; }
+.al-q { color: var(--slate-2); }
+.al-a { font-weight: 700; white-space: nowrap; }
 
 /* ---- Spinner ---- */
 .spinner {

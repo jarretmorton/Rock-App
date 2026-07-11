@@ -12,7 +12,10 @@
     <button id="home-btn" class="link-btn" type="button" aria-label="RockID home">
       <span class="logo-mark" aria-hidden="true">◆</span> RockID
     </button>
-    <button id="settings-btn" class="icon-btn" type="button" aria-label="Settings">⚙︎</button>
+    <div class="header-actions">
+      <button id="library-btn" class="icon-btn" type="button" aria-label="Library">▤</button>
+      <button id="settings-btn" class="icon-btn" type="button" aria-label="Settings">⚙︎</button>
+    </div>
   </header>
 
   <main id="app">
@@ -54,7 +57,7 @@
           <li>Your photos go directly from your browser to Google's API.</li>
           <li>On the free tier, Google may use your inputs to improve its products.</li>
           <li>The free tier isn't available in the EEA, UK, or Switzerland.</li>
-          <li>We never store your photos, and your key never leaves this device except in the request header to Google.</li>
+          <li>Photos are kept only if you tap "Save to library"; saved specimens live in this browser's local storage on your device and are never uploaded to us. Your key never leaves this device except in the request header to Google.</li>
         </ul>
       </details>
 
@@ -127,10 +130,25 @@
     <section id="screen-verdict" class="screen" hidden>
       <h1>Best identification</h1>
       <div id="verdict-out"></div>
+      <button id="save-library-btn" class="primary-btn" type="button">＋ Save to library</button>
+      <div id="save-status" aria-live="polite"></div>
       <div class="row">
         <button id="download-session-btn" class="secondary-btn" type="button">Download session (JSON)</button>
-        <button id="restart-btn" class="primary-btn" type="button">Identify another</button>
+        <button id="restart-btn" class="secondary-btn" type="button">Identify another</button>
       </div>
+    </section>
+
+    <!-- LIBRARY -->
+    <section id="screen-library" class="screen" hidden>
+      <h1>Your library</h1>
+      <p class="lede">Specimens you've saved on this device. Photos stay in this browser — they're never uploaded.</p>
+      <div id="library-out"></div>
+    </section>
+
+    <!-- LIBRARY DETAIL -->
+    <section id="screen-library-detail" class="screen" hidden>
+      <button id="library-back-btn" class="link-btn" type="button">← Back to library</button>
+      <div id="library-detail-out"></div>
     </section>
 
   </main>

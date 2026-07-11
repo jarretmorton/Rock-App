@@ -161,3 +161,88 @@ export function renderRawDebug(container, rawText) {
 export function statusLine(text, kind = 'info') {
   return el('p', { class: `status status-${kind}`, text });
 }
+
+// Human-friendly date from an ISO timestamp, degrading gracefully.
+function shortDate(iso) {
+  try {
+    return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch {
+    return iso;
+  }
+}
+
+// Library grid. onOpen(id) fires when a specimen card is tapped.
+export function renderLibrary(container, specimens, { onOpen }) {
+  clear(container);
+  if (!specimens.length) {
+    container.append(
+      el('div', { class: 'empty' }, [
+        el('p', { class: 'empty-icon', text: '▤', 'aria-hidden': 'true' }),
+        el('p', { text: 'No saved specimens yet. When you finish an identification, tap "Save to library" to keep it here.' }),
+      ])
+    );
+    return;
+  }
+  const grid = el('div', { class: 'lib-grid' });
+  specimens.forEach((s) => {
+    const thumb = s.image_data_url
+      ? el('img', { class: 'lib-thumb', src: s.image_data_url, alt: `Saved photo identified as ${s.name}` })
+      : el('div', { class: 'lib-thumb lib-thumb-empty', 'aria-hidden': 'true', text: '◆' });
+    const card = el('button', { class: 'lib-card', type: 'button', onclick: () => onOpen(s.id) }, [
+      thumb,
+      el('div', { class: 'lib-meta' }, [
+        el('span', { class: 'lib-name', text: s.name }),
+        el('span', { class: 'lib-sub', text: `${s.confidence != null ? Math.round(s.confidence * 100) + '% · ' : ''}${confidenceWord(s.confidence ?? 0)}` }),
+        el('span', { class: 'lib-date', text: shortDate(s.timestamp) }),
+      ]),
+    ]);
+    grid.append(card);
+  });
+  container.append(grid);
+}
+
+// Detail view for one saved specimen. onDelete(id) and onExport(specimen) callbacks.
+export function renderSpecimenDetail(container, s, { onDelete, onExport }) {
+  clear(container);
+
+  if (s.image_data_url) {
+    container.append(el('figure', { class: 'detail-figure' }, [
+      el('img', { src: s.image_data_url, alt: `Saved photo identified as ${s.name}` }),
+    ]));
+  }
+
+  if (s.call2_response) {
+    const verdictHost = el('div');
+    renderVerdict(verdictHost, s.call2_response);
+    container.append(verdictHost);
+  } else {
+    container.append(el('h2', { text: s.name }));
+  }
+
+  if (s.context) {
+    container.append(el('div', { class: 'panel' }, [
+      el('h3', { text: 'Your note' }),
+      el('p', { text: s.context }),
+    ]));
+  }
+
+  if (s.answers?.length) {
+    const list = el('ul', { class: 'answer-log' });
+    s.answers.forEach((a) => list.append(el('li', {}, [
+      el('span', { class: 'al-q', text: a.question }),
+      el('span', { class: 'al-a', text: a.answer }),
+    ])));
+    container.append(el('div', { class: 'panel' }, [
+      el('h3', { text: 'Your test answers' }),
+      list,
+    ]));
+  }
+
+  container.append(el('p', { class: 'detail-foot', text: `Saved ${shortDate(s.timestamp)} · ${s.model_id || ''} · ${s.prompt_version || ''}` }));
+
+  const actions = el('div', { class: 'row' }, [
+    el('button', { class: 'secondary-btn', type: 'button', text: 'Download JSON', onclick: () => onExport(s) }),
+    el('button', { class: 'danger-btn', type: 'button', text: 'Delete', onclick: () => onDelete(s.id) }),
+  ]);
+  container.append(actions);
+}

@@ -71,9 +71,12 @@ available in the EEA, UK, or Switzerland**.
 - Your API key lives only in `localStorage` and is sent **only** via the
   `x-goog-api-key` request header — never as a URL parameter, never logged.
 - Photos are processed in memory and sent directly from your browser to Google.
-  They are **never** stored (no `localStorage`/`IndexedDB` persistence of images).
-- The session export contains a SHA-256 **hash** of the image, not the image
-  itself.
+  By default nothing is persisted. The one exception is the **library**: if you
+  tap "Save to library", that specimen's photo and result are stored in this
+  browser's `IndexedDB`, on your device only — they are never uploaded to us. You
+  can delete any saved specimen from the library at any time.
+- The JSON session export contains a SHA-256 **hash** of the image, not the
+  image itself.
 
 ## Deploy to GitHub Pages
 
@@ -97,12 +100,14 @@ js/main.js          app state machine and flow control
 js/api.js           Gemini client: fetch, error mapping, downscale, MOCK_MODE
 js/prompts.js       ALL prompts + schemas + PROMPT_VERSION + MODEL_ID  (edit here)
 js/storage.js       localStorage helpers (key management)
+js/library.js       saved-specimen library (IndexedDB) — the only image persistence
 js/ui.js            DOM rendering helpers
 fixtures/           canned API responses for mock mode
 ```
 
 ## Non-goals (v0)
 
-No accounts, no server, no database, no photo storage, no offline/PWA, no custom
-classifier, no frameworks, no paid APIs. The model's reasoning is the content —
+No accounts, no server, no remote database, no offline/PWA, no custom
+classifier, no frameworks, no paid APIs. (Saved specimens live in a local,
+on-device library — see Privacy above.) The model's reasoning is the content —
 this isn't a rock encyclopedia.
