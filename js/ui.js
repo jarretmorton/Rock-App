@@ -201,8 +201,9 @@ export function renderLibrary(container, specimens, { onOpen }) {
   container.append(grid);
 }
 
-// Detail view for one saved specimen. onDelete(id) and onExport(specimen) callbacks.
-export function renderSpecimenDetail(container, s, { onDelete, onExport }) {
+// Detail view for one saved specimen. Callbacks:
+//   onDelete(id), onExport(specimen), onRedo(specimen), onSaveNote(text) -> Promise
+export function renderSpecimenDetail(container, s, { onDelete, onExport, onRedo, onSaveNote }) {
   clear(container);
 
   if (s.image_data_url) {
@@ -219,12 +220,34 @@ export function renderSpecimenDetail(container, s, { onDelete, onExport }) {
     container.append(el('h2', { text: s.name }));
   }
 
-  if (s.context) {
-    container.append(el('div', { class: 'panel' }, [
-      el('h3', { text: 'Your note' }),
-      el('p', { text: s.context }),
-    ]));
-  }
+  // Editable note. Always shown (even when empty) so a note can be added later.
+  const noteField = el('textarea', {
+    class: 'text-input', rows: '3',
+    placeholder: 'e.g., found on an Oregon beach, feels heavy for its size',
+  });
+  noteField.value = s.context || '';
+  const noteStatus = el('div');
+  const saveNoteBtn = el('button', {
+    class: 'secondary-btn', type: 'button', text: 'Save note',
+    onclick: async () => {
+      saveNoteBtn.disabled = true;
+      noteStatus.replaceChildren(statusLine('Saving…', 'info'));
+      try {
+        await onSaveNote(noteField.value.trim());
+        noteStatus.replaceChildren(statusLine('✓ Note saved.', 'ok'));
+      } catch {
+        noteStatus.replaceChildren(statusLine('Could not save the note.', 'err'));
+      } finally {
+        saveNoteBtn.disabled = false;
+      }
+    },
+  });
+  container.append(el('div', { class: 'panel' }, [
+    el('h3', { text: 'Your note' }),
+    noteField,
+    el('div', { class: 'row' }, [saveNoteBtn]),
+    noteStatus,
+  ]));
 
   if (s.answers?.length) {
     const list = el('ul', { class: 'answer-log' });
@@ -241,6 +264,9 @@ export function renderSpecimenDetail(container, s, { onDelete, onExport }) {
   container.append(el('p', { class: 'detail-foot', text: `Saved ${shortDate(s.timestamp)} · ${s.model_id || ''} · ${s.prompt_version || ''}` }));
 
   const actions = el('div', { class: 'row' }, [
+    s.image_data_url
+      ? el('button', { class: 'primary-btn', type: 'button', text: '↻ Re-identify', onclick: () => onRedo(s) })
+      : null,
     el('button', { class: 'secondary-btn', type: 'button', text: 'Download JSON', onclick: () => onExport(s) }),
     el('button', { class: 'danger-btn', type: 'button', text: 'Delete', onclick: () => onDelete(s.id) }),
   ]);

@@ -63,6 +63,16 @@ export async function downscaleImage(file) {
   return { base64, mimeType: 'image/jpeg', dataUrl };
 }
 
+// Rebuild the { base64, mimeType, dataUrl } shape from a stored data URL, so a
+// saved specimen can be re-identified without still having the original file.
+export function imageFromDataUrl(dataUrl) {
+  if (!dataUrl) return null;
+  const comma = dataUrl.indexOf(',');
+  const semi = dataUrl.indexOf(';');
+  const mimeType = semi > 5 ? dataUrl.slice(5, semi) : 'image/jpeg';
+  return { base64: dataUrl.slice(comma + 1), mimeType, dataUrl };
+}
+
 // SHA-256 hex of the base64 image bytes (for session export — the hash, not the image).
 export async function sha256OfBase64(base64) {
   const bin = atob(base64);
