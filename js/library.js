@@ -84,6 +84,16 @@ export async function getSpecimen(id) {
   return wrap(store.get(id));
 }
 
+// Update just the free-text note on a saved specimen, leaving everything else
+// intact. Uses separate read/write transactions so the read tx can't auto-commit
+// mid-edit.
+export async function updateSpecimenNote(id, context) {
+  const entry = await getSpecimen(id);
+  if (!entry) return;
+  entry.context = context;
+  await saveSpecimen(entry);
+}
+
 export async function deleteSpecimen(id) {
   const store = await tx('readwrite');
   return wrap(store.delete(id));

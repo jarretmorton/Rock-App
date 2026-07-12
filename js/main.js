@@ -11,6 +11,7 @@ import {
   validateKey,
   activeModel,
   onModelDowngrade,
+  imageFromDataUrl,
 } from './api.js';
 import {
   getApiKey,
@@ -32,13 +33,14 @@ import {
   listSpecimens,
   getSpecimen,
   deleteSpecimen,
+  updateSpecimenNote,
 } from './library.js';
 import * as ui from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 
 // App version — single source of truth, shown in the header. Bump on release.
-export const APP_VERSION = '0.3.0';
+export const APP_VERSION = '0.4.0';
 
 // --- Session state (in memory only; never persisted) -------------------------
 let session = null;
@@ -427,12 +429,31 @@ async function openSpecimen(id) {
   if (!s) return openLibrary();
   ui.renderSpecimenDetail($('library-detail-out'), s, {
     onExport: (spec) => downloadSession(spec),
+    onRedo: (spec) => redoSpecimen(spec),
+    onSaveNote: async (text) => {
+      await updateSpecimenNote(s.id, text);
+      s.context = text; // keep the in-memory copy in sync for re-identify/export
+    },
     onDelete: async (delId) => {
       await deleteSpecimen(delId);
       openLibrary();
     },
   });
   show('screen-library-detail');
+}
+
+// Re-run the identification for a saved specimen: load its photo + note into a
+// fresh session (new timestamp, current model) and drop into the normal flow.
+// The original entry is left untouched; the redo's result can be saved as a new
+// library entry from the verdict screen.
+async function redoSpecimen(s) {
+  const image = imageFromDataUrl(s.image_data_url);
+  if (!image) return; // nothing to re-identify without the stored photo
+  session = freshSession();
+  session.image = image;
+  session.image_sha256 = s.image_sha256 || null;
+  session.context = s.context || '';
+  await onIdentify();
 }
 
 // --- Shared helpers ----------------------------------------------------------
