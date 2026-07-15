@@ -6,6 +6,9 @@ unreliable, so instead of faking confidence, RockID returns the top candidates,
 then walks you through real physical diagnostic tests (vinegar fizz, glass
 scratch, streak, magnetism…) to narrow it down the way a geologist would.
 
+<img width="580" height="706" alt="image" src="https://github.com/user-attachments/assets/95c75a28-0601-4198-89af-c48d8b3a38bc" style="width: 30%;"/>
+<br><br>
+
 **Bring your own key (BYOK).** The app runs entirely in your browser. You supply
 your own free Gemini API key; it's stored only on your device and sent straight
 to Google — never to any server of ours.
