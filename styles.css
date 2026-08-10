@@ -62,7 +62,10 @@ body {
   z-index: 10;
   padding-top: max(12px, env(safe-area-inset-top));
 }
-.logo-mark { color: var(--iron); }
+/* Kept inline rather than flexed so .header-left's baseline alignment still
+   lines the version tag up with the wordmark; an SVG in a flex row has no
+   baseline and drags the tag out of position. */
+.logo-mark { width: 28px; height: 28px; vertical-align: -0.32em; }
 .app-header .link-btn { color: var(--quartz); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.02em; }
 .header-left { display: flex; align-items: baseline; gap: 6px; }
 .version-tag { color: var(--stone); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; }
