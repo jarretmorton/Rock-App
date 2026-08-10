@@ -65,12 +65,13 @@ body {
 /* Kept inline rather than flexed so .header-left's baseline alignment still
    lines the version tag up with the wordmark; an SVG in a flex row has no
    baseline and drags the tag out of position. */
-/* -0.46em optically centres the 28px mark against the wordmark's glyph box.
-   Measured, not guessed: the mark's centre and the centre of the rendered
-   "RockID" glyphs land within 0.05px of each other. Baseline alignment alone
-   sits the mark ~2.6px high, because the mark is much taller than the cap
-   height it would otherwise align to. */
-.logo-mark { width: 28px; height: 28px; vertical-align: -0.46em; }
+/* Sized and aligned against the wordmark by measuring the mark's visible INK
+   — the bracket pixels — not its SVG box. The brackets sit inset inside the
+   box, so a 28px box drew a 23.25px frame against a 21px wordmark and
+   overhung it by ~1.1px top and bottom even when perfectly centred. At 25px
+   the frame is 20.8px, flush with the wordmark, and -0.38em centres it to
+   within 0.2px. */
+.logo-mark { width: 25px; height: 25px; vertical-align: -0.38em; }
 .app-header .link-btn { color: var(--quartz); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.02em; }
 .header-left { display: flex; align-items: baseline; gap: 6px; }
 .version-tag { color: var(--stone); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; }
