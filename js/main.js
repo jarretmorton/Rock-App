@@ -40,7 +40,7 @@ import * as ui from './ui.js';
 const $ = (id) => document.getElementById(id);
 
 // App version — single source of truth, shown in the header. Bump on release.
-export const APP_VERSION = '0.4.3';
+export const APP_VERSION = '0.4.4';
 
 // --- Session state (in memory only; never persisted) -------------------------
 let session = null;
