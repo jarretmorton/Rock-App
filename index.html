@@ -8,7 +8,9 @@
 
   <!--
     App icon: a faceted iron-oxide stone inside camera framing brackets, in the
-    app's own palette (--iron / --iron-deep on --sand, brackets in --slate).
+    app's own palette (--iron / --iron-deep on --slate, brackets in --quartz).
+    The dark ground matches the app header, so the same mark works as the
+    header logo with its tile edge invisible.
     icon.svg is the master; favicon-32.png covers browsers that ignore SVG
     favicons, and apple-touch-icon.png is separate because iOS does not use SVG
     favicons for Add to Home Screen.
@@ -21,7 +23,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=0.4.5" />
 </head>
 <body>
   <header class="app-header">
@@ -192,6 +194,6 @@
 
   </main>
 
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/main.js?v=0.4.5"></script>
 </body>
 </html>
