@@ -1,6 +1,6 @@
 # RockID
 
-<img width="512" height="512" alt="rockidicon512" src="https://github.com/user-attachments/assets/dae04916-3dee-454a-9158-bbbe180ab0bd" style="width: 15%;"/>
+<img width="512" height="512" alt="rockidicon512" src="https://github.com/user-attachments/assets/e5900b52-9abe-43ba-ab78-10ecb8002994" style="width: 15%;"/>
 
 A static, mobile-first web app that identifies rocks from a photo using the
 Gemini vision API — and is **honest about uncertainty**. Photo-only rock ID is
