@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#3a3f44" />
   <title>RockID — honest rock identification</title>
+
+  <!--
+    App icon: a faceted iron-oxide stone inside camera framing brackets, in the
+    app's own palette (--iron / --iron-deep on --sand, brackets in --slate).
+    icon.svg is the master; favicon-32.png covers browsers that ignore SVG
+    favicons, and apple-touch-icon.png is separate because iOS does not use SVG
+    favicons for Add to Home Screen.
+
+    Without these, a page on github.io with no icon of its own falls back to
+    whatever icon the browser has cached for the origin — which is how RockID
+    ended up showing an unrelated app's icon in Edge's tab view.
+  -->
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
