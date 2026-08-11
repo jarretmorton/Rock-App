@@ -8,7 +8,7 @@ unreliable, so instead of faking confidence, RockID returns the top candidates,
 then walks you through real physical diagnostic tests (vinegar fizz, glass
 scratch, streak, magnetism…) to narrow it down the way a geologist would.
 
-<img width="580" height="706" alt="image" src="https://github.com/user-attachments/assets/95c75a28-0601-4198-89af-c48d8b3a38bc" style="width: 30%;"/>
+<img width="1080" height="1816" alt="image" src="https://github.com/user-attachments/assets/26192064-739a-4b68-ae7d-d3a63a2f1e49" style="width: 30%;"/>
 <br><br>
 
 **Bring your own key (BYOK).** The app runs entirely in your browser. You supply
