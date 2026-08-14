@@ -21,6 +21,7 @@ import {
   maskApiKey,
   getModelOverride,
   setModelOverride,
+  requestPersistence,
 } from './storage.js';
 import {
   MODEL_ID,
@@ -40,7 +41,7 @@ import * as ui from './ui.js';
 const $ = (id) => document.getElementById(id);
 
 // App version — single source of truth, shown in the header. Bump on release.
-export const APP_VERSION = '0.4.7';
+export const APP_VERSION = '0.4.8';
 
 // --- Session state (in memory only; never persisted) -------------------------
 let session = null;
@@ -85,6 +86,9 @@ function showLoading(msg) {
 
 // --- Boot --------------------------------------------------------------------
 function boot() {
+  // Fire-and-forget: asks the browser not to evict the saved library.
+  requestPersistence();
+
   wireHeader();
   wireSetup();
   wireCapture();

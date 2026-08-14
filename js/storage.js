@@ -1,5 +1,6 @@
 // storage.js — localStorage helpers. ONLY the API key and small UI settings are
-// ever persisted. Photos and session data are NEVER written to storage.
+// ever persisted here. Photos and session data are NEVER written to
+// localStorage (the opt-in specimen library uses IndexedDB — see library.js).
 
 const KEY_API = 'rockid.apiKey';
 const KEY_MODEL_OVERRIDE = 'rockid.modelOverride'; // optional: user-chosen model id
@@ -56,5 +57,23 @@ export function setModelOverride(id) {
     else localStorage.removeItem(KEY_MODEL_OVERRIDE);
   } catch {
     /* ignore */
+  }
+}
+
+// Ask the browser to treat this origin's storage as persistent.
+//
+// Safari's ITP can evict script-writable storage after roughly a week without
+// a visit. That covers both stores this app uses: the API key here, and — the
+// part actually worth protecting — the saved specimen library in IndexedDB,
+// photos included (see library.js). Persistence is a request, not a guarantee:
+// browsers weigh signals like installation and engagement, so a false result
+// means "not granted", not "failed". Best-effort; never blocks startup.
+export async function requestPersistence() {
+  try {
+    if (!navigator.storage?.persist) return false;
+    if (await navigator.storage.persisted()) return true;
+    return await navigator.storage.persist();
+  } catch {
+    return false;
   }
 }
