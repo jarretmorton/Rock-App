@@ -12,22 +12,19 @@ import {
   activeModel,
   onModelDowngrade,
   imageFromDataUrl,
+  setModelPair,
 } from './api.js';
+import { listModels, pickPair, isLite } from './models.js';
 import {
   getApiKey,
   setApiKey,
   clearApiKey,
   hasApiKey,
   maskApiKey,
-  getModelOverride,
   setModelOverride,
   requestPersistence,
 } from './storage.js';
-import {
-  MODEL_ID,
-  MODEL_ID_FALLBACK,
-  PROMPT_VERSION,
-} from './prompts.js';
+import { PROMPT_VERSION } from './prompts.js';
 import {
   specimenFromSession,
   saveSpecimen,
@@ -41,14 +38,20 @@ import * as ui from './ui.js';
 const $ = (id) => document.getElementById(id);
 
 // App version — single source of truth, shown in the header. Bump on release.
-export const APP_VERSION = '0.4.8';
+export const APP_VERSION = '0.5.0';
+
+// Models discovered from Google for this key, best first, plus the two the
+// toggle cycles between. Empty until discovery runs; pickPair() falls back to
+// the shipped constants so the UI works before and without it.
+let discovered = [];
+let pair = pickPair([]);
 
 // --- Session state (in memory only; never persisted) -------------------------
 let session = null;
 function freshSession() {
   return {
     timestamp: new Date().toISOString(),
-    model_id: getModelOverride() || MODEL_ID,
+    model_id: activeModel(), // records the model actually called, discovered or not
     prompt_version: PROMPT_VERSION,
     image: null, // { base64, mimeType, dataUrl } — NOT exported
     image_sha256: null,
@@ -105,6 +108,7 @@ function boot() {
 
   if (MOCK_MODE || hasApiKey()) {
     show('screen-capture');
+    refreshModelList(); // background: find the current best without opening Settings
   } else {
     renderSetup();
     show('screen-setup');
@@ -127,13 +131,18 @@ function wireHeader() {
 // --- 1. Setup / Settings -----------------------------------------------------
 function renderSetup() {
   const saved = hasApiKey();
-  $('key-entry').hidden = saved;
-  $('key-saved').hidden = !saved;
+  // The key field is always present now; a saved key shows as a mask beside it
+  // rather than being rendered back into the input.
+  $('key-input').value = '';
+  $('key-input').placeholder = saved ? 'Paste a new key to replace it' : 'AIza…';
+  $('key-mask').hidden = !saved;
+  $('key-mask').textContent = saved ? `Saved key: ${maskApiKey(getApiKey())}` : '';
+  $('key-remove-btn').disabled = !saved;
+  hideKeyConfirm();
   // "Start identifying" shows once a key exists (or in mock mode).
   $('setup-continue-btn').hidden = !(saved || MOCK_MODE);
   $('key-status').replaceChildren();
 
-  if (saved) $('key-mask').textContent = maskApiKey(getApiKey());
   if (MOCK_MODE) {
     $('key-status').replaceChildren(
       ui.statusLine('Mock mode is on (?mock=1) — no key needed. Real requests are disabled.', 'info')
@@ -141,16 +150,47 @@ function renderSetup() {
   }
 
   renderModelRow();
+  refreshModelList();
 }
 
-// Show which model is active and offer the relevant switch.
+// Fill the picker from whatever discovery found, always including the model in
+// use so the select can never silently disagree with what the app will call.
 function renderModelRow() {
-  const onLite = activeModel() === MODEL_ID_FALLBACK;
-  $('model-current').textContent = onLite
-    ? `${MODEL_ID_FALLBACK} — the lighter model (higher rate limits, slightly less detail).`
-    : `${MODEL_ID} — the default, stronger model.`;
-  $('model-reset-btn').hidden = !onLite; // offer "back to default" only when on lite
-  $('model-lite-btn').hidden = onLite; // offer "switch to lite" only when on default
+  const current = activeModel();
+  const options = discovered.slice();
+  if (!options.some((m) => m.id === current)) options.unshift({ id: current, label: current });
+
+  const select = $('model-select');
+  select.replaceChildren(
+    ...options.map((m) => {
+      const tag = m.id === pair.best ? ' — best free' : m.id === pair.lite ? ' — lighter, higher limits' : '';
+      const opt = ui.el('option', { value: m.id, text: `${m.label}${tag}` });
+      opt.selected = m.id === current;
+      return opt;
+    })
+  );
+
+  const onLite = isLite(current);
+  $('model-toggle-btn').textContent = onLite ? 'Use the best free model' : 'Switch to the lighter model';
+  $('model-note').textContent = onLite
+    ? 'On the lighter model: higher rate limits, slightly less detail.'
+    : 'On the strongest free model.';
+}
+
+// Ask Google what this key can reach. Best-effort: no key, no network or a
+// refused list just leaves the shipped defaults in place.
+async function refreshModelList() {
+  if (MOCK_MODE || !hasApiKey()) return;
+  try {
+    const found = await listModels(getApiKey());
+    if (!found.length) return;
+    discovered = found;
+    pair = pickPair(found);
+    setModelPair(pair);
+    renderModelRow();
+  } catch {
+    /* keep the built-in defaults; the picker still works */
+  }
 }
 
 function wireSetup() {
@@ -158,27 +198,43 @@ function wireSetup() {
   $('key-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') onSaveKey();
   });
-  $('key-change-btn').addEventListener('click', () => {
-    $('key-entry').hidden = false;
-    $('key-saved').hidden = true;
-    $('key-input').value = '';
-    $('key-input').focus();
-  });
+
+  // Forgetting the key is destructive and can't be undone here, so it asks.
   $('key-remove-btn').addEventListener('click', () => {
-    clearApiKey();
-    renderSetup();
+    $('key-confirm').hidden = false;
+    $('key-confirm-yes').focus();
   });
+  $('key-confirm-no').addEventListener('click', () => {
+    hideKeyConfirm();
+    $('key-remove-btn').focus();
+  });
+  $('key-confirm-yes').addEventListener('click', () => {
+    clearApiKey();
+    discovered = []; // the list belonged to that key
+    pair = pickPair([]);
+    renderSetup();
+    $('key-status').replaceChildren(ui.statusLine('Key removed from this device.', 'info'));
+  });
+
   $('setup-continue-btn').addEventListener('click', () => show('screen-capture'));
 
-  $('model-reset-btn').addEventListener('click', () => {
-    setModelOverride(''); // clear override → back to the default stronger model
+  $('model-select').addEventListener('change', (e) => {
+    // Selecting the best model clears the override so this browser keeps
+    // following the default as it moves; anything else is pinned.
+    setModelOverride(e.target.value === pair.best ? '' : e.target.value);
     hideModelBanner();
     renderModelRow();
   });
-  $('model-lite-btn').addEventListener('click', () => {
-    setModelOverride(MODEL_ID_FALLBACK);
+  $('model-toggle-btn').addEventListener('click', () => {
+    const goingLite = !isLite(activeModel());
+    setModelOverride(goingLite ? pair.lite : '');
+    if (!goingLite) hideModelBanner();
     renderModelRow();
   });
+}
+
+function hideKeyConfirm() {
+  $('key-confirm').hidden = true;
 }
 
 // --- Model downgrade banner --------------------------------------------------

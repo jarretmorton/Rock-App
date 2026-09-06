@@ -50,17 +50,24 @@ body {
 }
 
 /* ---- Header ---- */
+/* The slate band stays full-bleed; its contents are held to the same column as
+   #app (same max-width, same 16px padding) so the wordmark and the gear line up
+   with the content underneath instead of hugging the viewport edges. */
 .app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
   background: var(--slate);
   color: var(--quartz);
   position: sticky;
   top: 0;
   z-index: 10;
-  padding-top: max(12px, env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 12px 16px;
 }
 /* Kept inline rather than flexed so .header-left's baseline alignment still
    lines the version tag up with the wordmark; an SVG in a flex row has no
@@ -123,7 +130,26 @@ button { font: inherit; }
 .link-btn.subtle { color: var(--stone); font-weight: 500; display: block; margin: 20px auto 0; }
 .row { display: flex; gap: 12px; }
 .row > * { margin-top: 16px; }
-.row > .primary-btn, .row > .secondary-btn { flex: 1; }
+/* .danger-btn flexes too, so the three key buttons come out the same width. */
+.row > .primary-btn, .row > .secondary-btn, .row > .danger-btn, .row > .btn-as-link { flex: 1; }
+
+/* An <a> that has to sit in a button row without looking like a link. */
+.btn-as-link {
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; text-decoration: none;
+}
+/* Get a key / Save key / Forget key, same size, in that order. Wrapping keeps
+   three 52px targets usable on a narrow phone instead of crushing them. */
+.key-actions { flex-wrap: wrap; }
+.key-actions > * { flex: 1 1 30%; min-width: 8.5rem; }
+
+/* ---- Destructive-action confirm ---- */
+.confirm-box {
+  margin-top: 16px; padding: 12px 14px;
+  background: #f3ddd2; border: 2px solid var(--iron-deep); border-radius: var(--radius);
+}
+.confirm-text { margin: 0; font-weight: 600; color: var(--iron-deep); }
+.confirm-box .row > * { margin-top: 12px; }
 
 /* Visible keyboard focus everywhere. */
 :focus-visible { outline: 3px solid var(--iron); outline-offset: 2px; border-radius: 4px; }

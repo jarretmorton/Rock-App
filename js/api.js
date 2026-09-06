@@ -107,9 +107,29 @@ export function parseModelJson(text) {
   }
 }
 
-// --- Core fetch --------------------------------------------------------------
+// --- Model selection ---------------------------------------------------------
+// The two models the app works with. They start at the shipped constants and
+// are replaced by whatever discovery finds (see models.js), so a browser with
+// no stored override follows the newest free Flash rather than the name that
+// happened to be current when this file was last edited — and a rate-limit
+// downgrade lands on a Flash-Lite that still exists.
+let bestModel = MODEL_ID;
+let liteModel = MODEL_ID_FALLBACK;
+
+export function setModelPair({ best, lite }) {
+  if (best) bestModel = best;
+  if (lite) liteModel = lite;
+}
+export function bestModelId() {
+  return bestModel;
+}
+export function liteModelId() {
+  return liteModel;
+}
+
+// No stored override means "whatever the best free model is right now".
 export function activeModel() {
-  return getModelOverride() || MODEL_ID;
+  return getModelOverride() || bestModel;
 }
 
 // Notifier so the UI can tell the user when we auto-downgrade the model.
@@ -174,12 +194,12 @@ async function generateContent(parts, schema) {
   try {
     return await requestOnce(model, key, body);
   } catch (e) {
-    const canDowngrade = e instanceof ApiError && e.kind === 'rate' && model !== MODEL_ID_FALLBACK;
+    const canDowngrade = e instanceof ApiError && e.kind === 'rate' && model !== liteModel;
     if (!canDowngrade) throw e;
     // Switch to the lighter model for this and all future calls, then retry.
-    setModelOverride(MODEL_ID_FALLBACK);
-    notifyDowngrade(MODEL_ID_FALLBACK);
-    return await requestOnce(MODEL_ID_FALLBACK, key, body);
+    setModelOverride(liteModel);
+    notifyDowngrade(liteModel);
+    return await requestOnce(liteModel, key, body);
   }
 }
 

@@ -4,11 +4,13 @@
 // designed to be diffed, iterated on, and benchmarked.
 
 // --- Model configuration -----------------------------------------------------
-// Verified against https://ai.google.dev/gemini-api/docs/models (2026).
-// gemini-3.5-flash is the current free-tier multimodal Flash model.
-// If it 404s (model names go stale fast), swap to the fallback or a 2.5 variant.
-export const MODEL_ID = 'gemini-3.5-flash';
-export const MODEL_ID_FALLBACK = 'gemini-3.1-flash-lite'; // lighter, higher RPM — use when rate-limited
+// Where the model picker STARTS, not where it stays: models.js asks Google's
+// ListModels endpoint what this key can actually reach and replaces both of
+// these at runtime (see api.js setModelPair). They matter only before the list
+// arrives, and if it never does — no key yet, offline, or a refused list — so
+// they have to be plausible, not perpetually current.
+export const MODEL_ID = 'gemini-3.8-flash';          // newest free Flash, released 2026-09-02
+export const MODEL_ID_FALLBACK = 'gemini-3.5-flash-lite'; // lighter, higher RPM — use when rate-limited
 
 // Bump on ANY change to the prompt strings or schemas below. This string is
 // written into every session export so results are traceable to a prompt build.
