@@ -27,10 +27,14 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <link rel="stylesheet" href="styles.css?v=0.4.7" />
+  <link rel="stylesheet" href="styles.css?v=0.5.0" />
 </head>
 <body>
   <header class="app-header">
+   <!-- The bar stays full-bleed so the sticky slate band still spans the
+        viewport; header-inner holds its contents to the same 640px column as
+        #app, so the wordmark and the gear line up with the content below. -->
+   <div class="header-inner">
     <div class="header-left">
       <button id="home-btn" class="link-btn" type="button" aria-label="RockID home">
         <!--
@@ -49,6 +53,7 @@
       <button id="library-btn" class="icon-btn" type="button" aria-label="Library">▤</button>
       <button id="settings-btn" class="icon-btn" type="button" aria-label="Settings">⚙︎</button>
     </div>
+   </div>
   </header>
 
   <div id="model-banner" class="banner" role="status" hidden>
@@ -72,28 +77,34 @@
         <li>Copy the key (starts with <code>AIza…</code>) and paste it below.</li>
       </ol>
 
-      <div id="key-entry">
-        <label for="key-input" class="field-label">Gemini API key</label>
-        <input id="key-input" class="text-input" type="password" autocomplete="off"
-               spellcheck="false" placeholder="AIza…" />
-        <button id="key-save-btn" class="primary-btn" type="button">Validate &amp; save</button>
-        <div id="key-status" aria-live="polite"></div>
+      <label for="key-input" class="field-label">Gemini API key</label>
+      <input id="key-input" class="text-input" type="password" autocomplete="off"
+             spellcheck="false" placeholder="AIza…" />
+      <p id="key-mask" class="key-mask" hidden></p>
+
+      <div class="row key-actions">
+        <a class="btn-as-link secondary-btn" href="https://aistudio.google.com/apikey"
+           target="_blank" rel="noopener">Get a free key</a>
+        <button id="key-save-btn" class="primary-btn" type="button">Save key</button>
+        <button id="key-remove-btn" class="danger-btn" type="button">Forget key</button>
       </div>
 
-      <div id="key-saved" hidden>
-        <p class="field-label">Saved key</p>
-        <p id="key-mask" class="key-mask"></p>
+      <!-- Forgetting a key can't be undone from here, so it asks first. -->
+      <div id="key-confirm" class="confirm-box" hidden>
+        <p class="confirm-text">Forget the saved key? You'll have to paste it in again to identify anything.</p>
         <div class="row">
-          <button id="key-change-btn" class="secondary-btn" type="button">Change</button>
-          <button id="key-remove-btn" class="danger-btn" type="button">Remove</button>
+          <button id="key-confirm-yes" class="danger-btn" type="button">Yes, forget it</button>
+          <button id="key-confirm-no" class="secondary-btn" type="button">Cancel</button>
         </div>
       </div>
 
+      <div id="key-status" aria-live="polite"></div>
+
       <div id="model-settings">
-        <p class="field-label">Model</p>
-        <p id="model-current" class="model-current"></p>
-        <button id="model-reset-btn" class="secondary-btn" type="button" hidden>Use the stronger model (default)</button>
-        <button id="model-lite-btn" class="secondary-btn" type="button" hidden>Switch to the lighter model</button>
+        <label for="model-select" class="field-label">Model</label>
+        <select id="model-select" class="text-input"></select>
+        <p id="model-note" class="model-current" aria-live="polite"></p>
+        <button id="model-toggle-btn" class="secondary-btn" type="button"></button>
       </div>
 
       <details class="fine-print">
@@ -198,6 +209,6 @@
 
   </main>
 
-  <script type="module" src="js/main.js?v=0.4.7"></script>
+  <script type="module" src="js/main.js?v=0.5.0"></script>
 </body>
 </html>

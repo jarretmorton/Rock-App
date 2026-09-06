@@ -52,21 +52,41 @@ non-rock / unidentifiable path.
 ## Configuration
 
 Everything model-facing lives in [`js/prompts.js`](js/prompts.js) — the prompts,
-the JSON response schemas, `PROMPT_VERSION`, and the model constants:
+the JSON response schemas, `PROMPT_VERSION`, and the model constants
+`MODEL_ID` and `MODEL_ID_FALLBACK`.
 
-- `MODEL_ID` — the vision model (default `gemini-3.5-flash`).
-- `MODEL_ID_FALLBACK` — a lighter Flash-Lite model (`gemini-3.1-flash-lite`).
+### The model list comes from Google
 
-The app **starts on `MODEL_ID`** and, the first time a request hits a rate limit
-(HTTP 429), **automatically downgrades to `MODEL_ID_FALLBACK`**, shows a banner
-explaining the switch, and retries the request so the flow continues. The choice
-persists (in `localStorage`) so later requests skip straight to the lighter
-model. You can switch back to the stronger model, or opt into the lighter one
-manually, under **Settings → Model**.
+Model names go stale fast, so those two constants are where the picker
+**starts**, not where it stays. On startup (and whenever Settings open)
+[`js/models.js`](js/models.js) calls Google's
+[ListModels](https://ai.google.dev/api/models) endpoint with your key and fills
+**Settings → Model** with what that key can actually reach, newest first. A
+single button cycles between the two the app cares about:
 
-**Model names go stale.** If a request 404s on the model, update `MODEL_ID` here —
-it's the single source of truth. Verify current IDs at
-<https://ai.google.dev/gemini-api/docs/models>.
+- **best free** — the newest full Flash model
+- **lighter** — the newest Flash-Lite, which has higher rate limits and slightly
+  less detail
+
+Picking the best model stores nothing, so the browser keeps following the best
+as it moves; picking anything else pins it in `localStorage`.
+
+The first time a request hits a rate limit (HTTP 429), the app **automatically
+downgrades to the lighter model**, shows a banner explaining the switch, and
+retries so the flow continues — landing on the discovered Flash-Lite rather than
+a constant that may have been retired.
+
+**One caveat worth knowing.** ListModels reports what a key can reach, but *not
+what anything costs* — there is no free-tier or pricing field in the response.
+So "free" here is **inferred from the family**: Flash and Flash-Lite are the
+tiers Google offers at no cost, Pro is not, and everything else (embedding,
+image, TTS) is filtered out. If Google changes which families are free, the
+`keep()` filter in `js/models.js` is the line to revisit.
+
+Discovery is always an enhancement, never a dependency. No key, no network, or a
+refused list simply leaves the constants in place. If a request 404s on the
+model, pick another from the dropdown — or update `MODEL_ID`. Verify current IDs
+at <https://ai.google.dev/gemini-api/docs/models>.
 
 ## Getting a free Gemini API key
 
@@ -110,6 +130,7 @@ styles.css          field-guide mineral-tone styling, mobile-first
 js/main.js          app state machine and flow control
 js/api.js           Gemini client: fetch, error mapping, downscale, MOCK_MODE
 js/prompts.js       ALL prompts + schemas + PROMPT_VERSION + MODEL_ID  (edit here)
+js/models.js        live model discovery via Google's ListModels endpoint
 js/storage.js       localStorage helpers (key management)
 js/library.js       saved-specimen library (IndexedDB) — the only image persistence
 js/ui.js            DOM rendering helpers
