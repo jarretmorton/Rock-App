@@ -1,8 +1,13 @@
 // library.js — the saved-specimen library, backed by IndexedDB.
 //
 // This is the ONE place in the app that persists images. Everything here stays
-// on the user's own device (IndexedDB); nothing is uploaded anywhere. Saving is
-// opt-in: an entry is written only when the user taps "Save to library".
+// on the user's own device (IndexedDB); nothing is uploaded anywhere.
+//
+// Saving is AUTOMATIC: an entry is written as soon as an identification
+// produces candidates, and updated as the answers and verdict come in. That
+// means every rock you photograph is kept on this device until you delete it —
+// deliberately, so a session is never lost by closing the tab, but worth
+// knowing, since the photo is part of what's kept. Delete removes it for good.
 
 const DB_NAME = 'rockid-library';
 const DB_VERSION = 1;
@@ -46,16 +51,24 @@ function newId() {
   return [...a].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Build a library entry from a completed session. Includes the downscaled image
-// data URL (this is the deliberate exception to the app's no-persistence rule).
+// Build a library entry from a session — complete or still in progress.
+// Includes the downscaled image data URL (the deliberate exception to the app's
+// no-persistence rule).
+//
+// Reuses session.id when there is one, so the repeated saves that follow an
+// identification update one row rather than littering the library with a
+// half-finished copy per step.
 export function specimenFromSession(session) {
   const verdict = session.call2_response;
   return {
-    id: newId(),
+    id: session.id || newId(),
     timestamp: session.timestamp,
     image_data_url: session.image?.dataUrl || null,
     image_sha256: session.image_sha256,
-    name: verdict?.final?.name || 'Unknown',
+    // Before the verdict lands there is no final name, so fall back to the
+    // leading candidate — a row labelled "Basalt?" is far more use in the
+    // library than one labelled "Unknown".
+    name: verdict?.final?.name || session.call1_response?.candidates?.[0]?.name || 'Unknown',
     confidence: verdict?.final?.confidence ?? null,
     context: session.context || '',
     model_id: session.model_id,
