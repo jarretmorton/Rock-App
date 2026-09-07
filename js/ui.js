@@ -178,7 +178,7 @@ export function renderLibrary(container, specimens, { onOpen }) {
     container.append(
       el('div', { class: 'empty' }, [
         el('p', { class: 'empty-icon', text: '▤', 'aria-hidden': 'true' }),
-        el('p', { text: 'No saved specimens yet. When you finish an identification, tap "Save to library" to keep it here.' }),
+        el('p', { text: 'No specimens yet. Every rock you identify is kept here automatically — identify one and it will show up.' }),
       ])
     );
     return;

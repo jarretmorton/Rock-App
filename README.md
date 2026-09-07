@@ -21,6 +21,11 @@ photograph rock → top-3 candidates with reasoning → answer a few diagnostic
 questions → final verdict with confidence, a runner-up, and one confirming test →
 optionally download the session as JSON.
 
+Every identification is saved to your **library** (the ▤ button) automatically,
+from the moment candidates come back — so an abandoned run keeps its photo and
+its answers, and nothing is lost by closing the tab. See Privacy below for what
+that means, and how to remove one.
+
 ## Local development
 
 It's a static site — no build step, no dependencies. Serve the folder with any
@@ -101,11 +106,13 @@ available in the EEA, UK, or Switzerland**.
 
 - Your API key lives only in `localStorage` and is sent **only** via the
   `x-goog-api-key` request header — never as a URL parameter, never logged.
-- Photos are processed in memory and sent directly from your browser to Google.
-  By default nothing is persisted. The one exception is the **library**: if you
-  tap "Save to library", that specimen's photo and result are stored in this
-  browser's `IndexedDB`, on your device only — they are never uploaded to us. You
-  can delete any saved specimen from the library at any time.
+- Photos are sent directly from your browser to Google, and are **also kept on
+  this device**: every identification is saved to the library automatically —
+  photo included — as soon as the model returns candidates, so a session is
+  never lost by closing the tab. Saved specimens live in this browser's
+  `IndexedDB`, on your device only, and are never uploaded to us. Delete any of
+  them from the library at any time, or tap **Don't keep this one** on a result
+  to remove it immediately.
 - The JSON session export contains a SHA-256 **hash** of the image, not the
   image itself.
 

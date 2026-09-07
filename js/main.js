@@ -38,7 +38,7 @@ import * as ui from './ui.js';
 const $ = (id) => document.getElementById(id);
 
 // App version — single source of truth, shown in the header. Bump on release.
-export const APP_VERSION = '0.5.0';
+export const APP_VERSION = '0.6.0';
 
 // Models discovered from Google for this key, best first, plus the two the
 // toggle cycles between. Empty until discovery runs; pickPair() falls back to
@@ -50,6 +50,9 @@ let pair = pickPair([]);
 let session = null;
 function freshSession() {
   return {
+    // Set once this session earns a library row, so every later save updates
+    // that row instead of adding another.
+    id: null,
     timestamp: new Date().toISOString(),
     model_id: activeModel(), // records the model actually called, discovered or not
     prompt_version: PROMPT_VERSION,
@@ -346,6 +349,9 @@ async function onIdentify() {
       return;
     }
     ui.renderCandidates($('candidates-out'), data);
+    // Kept from here on, so abandoning the diagnostics doesn't lose the photo
+    // and the candidates that came back with it.
+    await saveToLibrary();
     show('screen-candidates');
   } catch (err) {
     handleApiError(err, onIdentify);
@@ -384,6 +390,7 @@ function renderCurrentQuestion() {
     onAnswer: (answer) => {
       session.answers.push({ id: q.id, question: q.text, answer });
       session._qIndex += 1;
+      saveToLibrary(); // keep the answers even if the run is abandoned here
       if (session._qIndex >= qs.length) finishDiagnostics();
       else renderCurrentQuestion();
     },
@@ -402,7 +409,8 @@ async function finishDiagnostics() {
     });
     session.call2_response = data;
     ui.renderVerdict($('verdict-out'), data);
-    resetSaveButton();
+    await saveToLibrary(); // fold the answers and the verdict into the row
+    renderSaveState();
     show('screen-verdict');
   } catch (err) {
     handleApiError(err, finishDiagnostics);
@@ -412,7 +420,7 @@ async function finishDiagnostics() {
 // --- 5. Verdict + export -----------------------------------------------------
 function wireVerdict() {
   $('download-session-btn').addEventListener('click', () => downloadSession(session));
-  $('save-library-btn').addEventListener('click', onSaveToLibrary);
+  $('library-remove-btn').addEventListener('click', onRemoveFromLibrary);
   $('restart-btn').addEventListener('click', () => {
     session = freshSession();
     resetCaptureUi();
@@ -420,26 +428,54 @@ function wireVerdict() {
   });
 }
 
-// Reset the Save-to-library button to its default state (called each time a
-// fresh verdict is shown).
-function resetSaveButton() {
-  const btn = $('save-library-btn');
-  btn.disabled = false;
-  btn.textContent = '＋ Save to library';
-  $('save-status').replaceChildren();
-}
-
-async function onSaveToLibrary() {
-  const btn = $('save-library-btn');
+// Write the session to its library row, creating the row the first time.
+// Best-effort throughout: storage can be unavailable (private mode, a full
+// disk) and losing the library must never cost you the identification on
+// screen, so a failure only marks the session unsaved.
+let librarySaveFailed = false;
+async function saveToLibrary() {
+  // Nothing to keep until the model has actually identified something.
+  if (!session?.call1_response?.candidates?.length) return;
   try {
     const entry = specimenFromSession(session);
+    session.id = entry.id; // first save fixes the id; later ones update it
     await saveSpecimen(entry);
-    btn.disabled = true;
-    btn.textContent = '✓ Saved to library';
-    $('save-status').replaceChildren(ui.statusLine('Saved to this device. Open it any time from the library (▤).', 'ok'));
-  } catch (e) {
-    $('save-status').replaceChildren(ui.statusLine('Could not save — your browser may block local storage in private mode.', 'err'));
+    librarySaveFailed = false;
+  } catch {
+    librarySaveFailed = true;
   }
+}
+
+// Tell the user where the specimen went — and offer a way out, since it was
+// kept without being asked and a photo is part of what's kept.
+function renderSaveState() {
+  const status = $('save-status');
+  const removeBtn = $('library-remove-btn');
+  if (librarySaveFailed || !session?.id) {
+    removeBtn.hidden = true;
+    status.replaceChildren(
+      ui.statusLine('Not saved — your browser may block local storage in private mode.', 'err')
+    );
+    return;
+  }
+  removeBtn.hidden = false;
+  status.replaceChildren(
+    ui.statusLine('Saved to this device automatically. Open it any time from the library (▤).', 'ok')
+  );
+}
+
+async function onRemoveFromLibrary() {
+  if (!session?.id) return;
+  try {
+    await deleteSpecimen(session.id);
+  } catch {
+    /* already gone, or storage is unavailable — either way it isn't saved */
+  }
+  session.id = null;
+  $('library-remove-btn').hidden = true;
+  $('save-status').replaceChildren(
+    ui.statusLine('Removed from your library. This one is not kept on the device.', 'info')
+  );
 }
 
 // The stable session-export shape (also used to export a saved specimen).

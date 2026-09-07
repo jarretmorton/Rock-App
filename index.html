@@ -27,7 +27,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <link rel="stylesheet" href="styles.css?v=0.5.0" />
+  <link rel="stylesheet" href="styles.css?v=0.6.0" />
 </head>
 <body>
   <header class="app-header">
@@ -113,7 +113,8 @@
           <li>Your photos go directly from your browser to Google's API.</li>
           <li>On the free tier, Google may use your inputs to improve its products.</li>
           <li>The free tier isn't available in the EEA, UK, or Switzerland.</li>
-          <li>Photos are kept only if you tap "Save to library"; saved specimens live in this browser's local storage on your device and are never uploaded to us. Your key never leaves this device except in the request header to Google.</li>
+          <li>Every rock you identify is saved to your library automatically — the photo included — so a session is never lost by closing the tab. Saved specimens live in this browser's storage on your device and are never uploaded to us. Delete any of them from the library, or tap "Don't keep this one" on a result.</li>
+          <li>Your key never leaves this device except in the request header to Google.</li>
         </ul>
       </details>
 
@@ -186,8 +187,9 @@
     <section id="screen-verdict" class="screen" hidden>
       <h1>Best identification</h1>
       <div id="verdict-out"></div>
-      <button id="save-library-btn" class="primary-btn" type="button">＋ Save to library</button>
+      <!-- Kept automatically; the button is the way out, not the way in. -->
       <div id="save-status" aria-live="polite"></div>
+      <button id="library-remove-btn" class="danger-btn" type="button" hidden>Don't keep this one</button>
       <div class="row">
         <button id="download-session-btn" class="secondary-btn" type="button">Download session (JSON)</button>
         <button id="restart-btn" class="secondary-btn" type="button">Identify another</button>
@@ -209,6 +211,6 @@
 
   </main>
 
-  <script type="module" src="js/main.js?v=0.5.0"></script>
+  <script type="module" src="js/main.js?v=0.6.0"></script>
 </body>
 </html>
